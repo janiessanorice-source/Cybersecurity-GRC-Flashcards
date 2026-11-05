@@ -1,0 +1,29 @@
+1. What is the primary objective of a Governance, Risk, and Compliance (GRC) framework in an enterprise environment?
+Answer: To align IT operations with business goals while managing risk and ensuring adherence to regulatory requirements.
+
+2. How does AI governance differ from traditional IT governance?
+Answer: AI governance specifically addresses algorithmic bias, model transparency, data provenance, and continuous behavioral monitoring of machine learning systems.
+
+3. What is the significance of the NIST AI Risk Management Framework (AI RMF)?
+Answer: It provides a structured voluntary guidance model focused on trustworthiness across four core functions: Govern, Map, Measure, and Manage.
+
+4. What does "Risk Appetite" mean in the context of organizational cybersecurity policy?
+Answer: The amount and type of risk an organization is willing to pursue or retain before implementing additional controls.
+
+5. What is the purpose of conducting a Data Protection Impact Assessment (DPIA)?
+Answer: To identify and minimize data protection risks prior to processing personal or sensitive information, particularly under regulations like GDPR.
+
+6. Define the Principle of Least Privilege (PoLP) and its role in governance.
+Answer: Ensuring users and systems only have the absolute minimum access levels necessary to perform their required functions, reducing the blast radius of potential breaches.
+
+7. What is model drift in AI systems, and why is it a governance concern?
+Answer: Model drift occurs when an AI model's accuracy degrades over time due to changes in the operating environment or underlying data distributions, impacting reliability and compliance.
+
+8. What is the difference between a security policy, a standard, and a procedure?
+Answer: Policies are high-level management directives; standards define mandatory rules or technologies; procedures are step-by-step instructions for execution.
+
+9. How do third-party risk management (TPRM) programs protect an organization?
+Answer: By assessing, monitoring, and mitigating security and compliance risks introduced by external vendors and supply chain partners.
+
+10. What is an Incident Response Plan (IRP), and why is executive sign-off critical?
+Answer: A structured framework for detecting, responding to, and recovering from cybersecurity incidents; executive sign-off ensures legal, financial, and operational alignment during a crisis.
