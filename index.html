@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Columbia GRC & AI Governance Flashcards</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --accent-color: #58a6ff;
+            --accent-hover: #1f6feb;
+            --success-color: #238636;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+        }
+
+        header p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background-color: var(--border-color);
+            border-radius: 3px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--accent-color);
+            width: 10%;
+            transition: width 0.3s ease;
+        }
+
+        /* Flashcard 3D Flip Styles */
+        .flashcard-container {
+            width: 100%;
+            height: 320px;
+            perspective: 1000px;
+            cursor: pointer;
+            margin-bottom: 24px;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 32px;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            background-color: #1a222d;
+            border-color: #388bfd44;
+        }
+
+        .card-header-tag {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        .card-content {
+            font-size: 1.15rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+            margin: auto 0;
+        }
+
+        .card-footer-hint {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        /* Navigation Controls */
+        .controls {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        button {
+            background-color: #21262d;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            flex: 1;
+        }
+
+        button:hover {
+            background-color: #30363d;
+            border-color: #8b949e;
+        }
+
+        button.primary {
+            background-color: var(--accent-hover);
+            border-color: transparent;
+        }
+
+        button.primary:hover {
+            background-color: #388bfd;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Columbia GRC & AI Governance</h1>
+            <p>Interactive Flashcard Deck</p>
+        </header>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="flashcard-container" onclick="flipCard()">
+            <div class="flashcard" id="flashcard">
+                <!-- Front Side -->
+                <div class="card-face card-front">
+                    <span class="card-header-tag" id="cardCounter">Question 1 of 10</span>
+                    <div class="card-content" id="cardQuestion">Loading question...</div>
+                    <div class="card-footer-hint">Click card to flip & reveal answer ⟳</div>
+                </div>
+                <!-- Back Side -->
+                <div class="card-face card-back">
+                    <span class="card-header-tag">Answer</span>
+                    <div class="card-content" id="cardAnswer">Loading answer...</div>
+                    <div class="card-footer-hint">Click card to flip back</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button onclick="prevCard()">← Previous</button>
+            <button class="primary" onclick="flipCard()">Flip Card</button>
+            <button onclick="nextCard()">Next →</button>
+        </div>
+    </div>
+
+    <script>
+        const flashcards = [
+            {
+                q: "What is the primary objective of a Governance, Risk, and Compliance (GRC) framework in an enterprise environment?",
+                a: "To align IT operations with business goals while managing risk and ensuring adherence to regulatory requirements."
+            },
+            {
+                q: "How does AI governance differ from traditional IT governance?",
+                a: "AI governance specifically addresses algorithmic bias, model transparency, data provenance, and continuous behavioral monitoring of machine learning systems."
+            },
+            {
+                q: "What is the significance of the NIST AI Risk Management Framework (AI RMF)?",
+                a: "It provides a structured voluntary guidance model focused on trustworthiness across four core functions: Govern, Map, Measure, and Manage."
+            },
+            {
+                q: "What does \"Risk Appetite\" mean in the context of organizational cybersecurity policy?",
+                a: "The amount and type of risk an organization is willing to pursue or retain before implementing additional controls."
+            },
+            {
+                q: "What is the purpose of conducting a Data Protection Impact Assessment (DPIA)?",
+                a: "To identify and minimize data protection risks prior to processing personal or sensitive information, particularly under regulations like GDPR."
+            },
+            {
+                q: "Define the Principle of Least Privilege (PoLP) and its role in governance.",
+                a: "Ensuring users and systems only have the absolute minimum access levels necessary to perform their required functions, reducing the blast radius of potential breaches."
+            },
+            {
+                q: "What is model drift in AI systems, and why is it a governance concern?",
+                a: "Model drift occurs when an AI model's accuracy degrades over time due to changes in the operating environment or underlying data distributions, impacting reliability and compliance."
+            },
+            {
+                q: "What is the difference between a security policy, a standard, and a procedure?",
+                a: "Policies are high-level management directives; standards define mandatory rules or technologies; procedures are step-by-step instructions for execution."
+            },
+            {
+                q: "How do third-party risk management (TPRM) programs protect an organization?",
+                a: "By assessing, monitoring, and mitigating security and compliance risks introduced by external vendors and supply chain partners."
+            },
+            {
+                q: "What is an Incident Response Plan (IRP), and why is executive sign-off critical?",
+                a: "A structured framework for detecting, responding to, and recovering from cybersecurity incidents; executive sign-off ensures legal, financial, and operational alignment during a crisis."
+            }
+        ];
+
+        let currentIndex = 0;
+        let isFlipped = false;
+
+        const flashcardEl = document.getElementById('flashcard');
+        const questionEl = document.getElementById('cardQuestion');
+        const answerEl = document.getElementById('cardAnswer');
+        const counterEl = document.getElementById('cardCounter');
+        const progressFill = document.getElementById('progressFill');
+
+        function updateCard() {
+            questionEl.textContent = flashcards[currentIndex].q;
+            answerEl.textContent = flashcards[currentIndex].a;
+            counterEl.textContent = `Question ${currentIndex + 1} of ${flashcards.length}`;
+            progressFill.style.width = `${((currentIndex + 1) / flashcards.length) * 100}%`;
+        }
+
+        function flipCard() {
+            isFlipped = !isFlipped;
+            if (isFlipped) {
+                flashcardEl.classList.add('flipped');
+            } else {
+                flashcardEl.classList.remove('flipped');
+            }
+        }
+
+        function nextCard() {
+            if (isFlipped) flipCard();
+            setTimeout(() => {
+                currentIndex = (currentIndex + 1) % flashcards.length;
+                updateCard();
+            }, 200);
+        }
+
+        function prevCard() {
+            if (isFlipped) flipCard();
+            setTimeout(() => {
+                currentIndex = (currentIndex - 1 + flashcards.length) % flashcards.length;
+                updateCard();
+            }, 200);
+        }
+
+        // Initialize first card on load
+        updateCard();
+    </script>
+</body>
+</html>
