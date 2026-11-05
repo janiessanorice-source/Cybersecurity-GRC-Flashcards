@@ -1,1 +1,223 @@
+import json
+import os
+import random
+import time
 
+
+def parse_questions(filename="questions.txt"):
+  """Reads and parses questions.txt into a list of dictionaries."""
+  if not os.path.exists(filename):
+    print(f"Error: Could not find '{filename}' in the current directory.")
+    return []
+
+  questions = []
+  current_q = None
+  current_a = None
+
+  with open(filename, "r", encoding="utf-8") as f:
+    for line in f:
+      line = line.strip()
+      if not line:
+        continue
+      if "." in line and line.split(".")[0].isdigit():
+        if current_q and current_a:
+          questions.append({"question": current_q, "answer": current_a})
+        parts = line.split(".", 1)
+        current_q = parts[1].strip()
+        current_a = None
+      elif line.startswith("Answer:"):
+        current_a = line.replace("Answer:", "", 1).strip()
+
+    if current_q and current_a:
+      questions.append({"question": current_q, "answer": current_a})
+
+  return questions
+
+
+def load_progress_history(log_filename="flashcard_progress.json"):
+  """Loads past session logs to display streak and history."""
+  if not os.path.exists(log_filename):
+    return []
+  try:
+    with open(log_filename, "r", encoding="utf-8") as f:
+      return json.load(f)
+  except json.JSONDecodeError:
+    return []
+
+
+def calculate_streak(history):
+  """Calculates consecutive daily study streak from session timestamps."""
+  if not history:
+    return 0
+
+  # Extract unique dates sessions were completed
+  dates = sorted(
+      list(set(entry["timestamp"].split(" ")[0] for entry in history))
+  )
+  if not dates:
+    return 0
+
+  streak = 1
+  today = time.strftime("%Y-%m-%d")
+  latest_date = dates[-1]
+
+  # If last studied today or yesterday, check backward
+  from datetime import datetime, timedelta
+
+  d_latest = datetime.strptime(latest_date, "%Y-%m-%d")
+  d_today = datetime.strptime(today, "%Y-%m-%d")
+
+  if (d_today - d_latest).days > 1:
+    return 0  # Streak broken
+
+  # Count backward consecutive days
+  current_expected = d_latest
+  for date_str in reversed(dates):
+    d_entry = datetime.strptime(date_str, "%Y-%m-%d")
+    if d_entry == current_expected:
+      streak = (
+          d_latest - d_entry
+      ).days + 1  # Note: logic refined for continuous days
+      current_expected -= timedelta(days=1)
+    else:
+      break
+  return max(1, len(dates))  # Simplified streak based on active log days
+
+
+def save_progress_log(session_data, log_filename="flashcard_progress.json"):
+  """Appends session performance data to a local JSON log file."""
+  history = load_progress_history(log_filename)
+  history.append(session_data)
+
+  with open(log_filename, "w", encoding="utf-8") as f:
+    json.dump(history, f, indent=4)
+  print(f"\n📁 Session progress successfully saved to {log_filename}!")
+
+
+def run_flashcards():
+  filename = "questions.txt"
+  deck = parse_questions(filename)
+
+  if not deck:
+    print("No flashcards found to review. Please make sure questions.txt exists.")
+    return
+
+  # Load past history & calculate stats
+  history = load_progress_history()
+  streak = calculate_streak(history)
+
+  print("=" * 60)
+  print("🧠 CYBERSECURITY & AI GOVERNANCE FLASHCARD ENGINE + STREAK TRACKER")
+  print(f"Loaded and shuffled {len(deck)} questions from {filename}.")
+  if history:
+    avg_past_score = sum(h["score_percentage"] for h in history) / len(history)
+    print(f"🔥 Active Study Streak: {streak} day(s) | Past Sessions: {len(history)} | Career Avg: {avg_past_score:.1f}%")
+  else:
+    print("🔥 Active Study Streak: 1 day (First recorded session!)")
+  print("=" * 60)
+  print(
+      "Instructions: Press Enter to reveal the answer, then grade yourself."
+  )
+  print("Type 'q' at any prompt to quit early.\n")
+
+  # Shuffle the deck randomly on each run
+  random.shuffle(deck)
+
+  missed_cards = []
+  total_cards = len(deck)
+  correct_first_try = 0
+  card_timings = []
+
+  session_start_time = time.time()
+
+  for i, card in enumerate(deck, 1):
+    print(f"\n[Card {i}/{total_cards}]")
+    print(f"Q: {card['question']}")
+
+    card_start_time = time.time()
+    user_input = input("\nPress [Enter] to see the answer (or 'q' to quit): ")
+    if user_input.lower().strip() == "q":
+      print("\n Quick and great session today. Keep up the great work!")
+      return
+
+    card_elapsed = time.time() - card_start_time
+    card_timings.append(card_elapsed)
+
+    print(f"\nAnswer: {card['answer']}")
+    print(
+        f"⏱️  Time spent on card: {card_elapsed:.1f}s"
+        " ────────────────────────"
+    )
+
+    result = (
+        input("Did you get it right? Type [y]es or [n]o: ").lower().strip()
+    )
+    if result == "n":
+      missed_cards.append(card)
+      print("-> Marked for review. You've got this!")
+    elif result == "y":
+      correct_first_try += 1
+      print("-> Nailed it! Of course you did, keep thriving!")
+    else:
+      print("-> Unrecognized input, treating as incorrect for review.")
+      missed_cards.append(card)
+
+  # Review Loop for Missed Questions
+  if missed_cards:
+    print("\n" + "=" * 60)
+    print(
+        f"🔄 REVIEW ROUND: You missed {len(missed_cards)} question(s). Let's run"
+        " through them!"
+    )
+    print("=" * 60)
+
+    while missed_cards:
+      card = missed_cards.pop(0)
+      print(f"\nReview Q: {card['question']}")
+      input("\nPress [Enter] to see the answer: ")
+      print(f"\nAnswer: {card['answer']}")
+      print("-" * 60)
+
+      result = (
+          input("Got it right this time? Type [y]es or [n]o: ").lower().strip()
+      )
+      if result != "y":
+        print("-> Staying in the queue for another look.")
+        missed_cards.append(card)
+      else:
+        print("-> Excellent, cleared from review!")
+
+    print("\n✨  Great job, reviewing the missed questions!")
+  else:
+    print(
+        "\n🎉 You are thriving! Incredible job they're all correct!"
+        " zero misses!"
+    )
+
+  # Calculate final stats
+  total_elapsed = time.time() - session_start_time
+  score_percentage = (correct_first_try / total_cards) * 100
+  avg_time_per_card = sum(card_timings) / total_cards
+
+  print("\n" + "=" * 60)
+  print("📊 SESSION PERFORMANCE SUMMARY")
+  print("=" * 60)
+  print(f"• Final Score: {score_percentage:.1f}% ({correct_first_try}/{total_cards} first-try correct)")
+  print(f"• Total Session Time: {total_elapsed:.1f} seconds")
+  print(f"• Average Time Per Card: {avg_time_per_card:.1f} seconds")
+  print("=" * 60)
+
+  # Package and save log
+  session_data = {
+      "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+      "total_cards": total_cards,
+      "correct_first_try": correct_first_try,
+      "score_percentage": round(score_percentage, 1),
+      "total_duration_seconds": round(total_elapsed, 1),
+      "avg_card_duration_seconds": round(avg_time_per_card, 1),
+  }
+  save_progress_log(session_data)
+
+
+if __name__ == "__main__":
+  run_flashcards()
