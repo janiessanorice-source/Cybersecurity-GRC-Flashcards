@@ -279,22 +279,11 @@
                 flashcardEl.classList.remove('flipped');
             }
         }
-
-      function nextCard() {
+function nextCard() {
     if (isFlipped) flipCard();
     setTimeout(() => {
-        if (currentIndex < flashcards.length - 1) {
-            currentIndex++;
-            updateCard();
-        } else {
-            // Replaces the flashcard container with your completion message
-            document.getElementById('flashcard-container').innerHTML = `
-                <div class="completion-card" style="text-align: center; padding: 40px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                    <h2 style="color: #2b3137; margin-bottom: 12px;">You've completed the questions for today! 🎉</h2>
-                    <p style="color: #586069;">Great job working through your Columbia GRC & AI Governance flashcards.</p>
-                </div>
-            `;
-        }
+        currentIndex = (currentIndex + 1) % flashcards.length;
+        updateCard();
     }, 200);
 }
 
